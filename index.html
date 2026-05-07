@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECCO — AI Sample Library Manager | Kickstarter</title>
+<meta name="description" content="ECCO is the AI-powered sample library manager. Fully offline. Search, organize, and drag samples into your DAW.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #000000;
+  color: #e0e0e0;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: rgba(74, 222, 128, 0.3); color: #fff; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #000000; }
+::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #4ade80; }
+a { color: #4ade80; text-decoration: none; transition: color 0.3s; }
+a:hover { color: #6ee7a0; }
+img { max-width: 100%; display: block; }
+ul { list-style: none; }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ===== NAVIGATION ===== */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(74, 222, 128, 0.08);
+  transition: all 0.3s;
+}
+nav.scrolled {
+  background: rgba(10, 10, 10, 0.95);
+  border-bottom-color: rgba(74, 222, 128, 0.15);
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.nav-logo { display:flex; align-items:center; margin-left:-16px; }
+.nav-logo img { display:block; }
+.nav-links { display: flex; align-items: center; gap: 32px; }
+.nav-links a {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #a0a0a0;
+  transition: color 0.3s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #4ade80;
+  transition: width 0.3s;
+}
+.nav-links a:hover { color: #fff; }
+.nav-links a:hover::after { width: 100%; }
+.nav-actions { display: flex; align-items: center; gap: 16px; }
+.btn-nav {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  font-family: inherit;
+}
+.btn-nav-primary {
+  background: linear-gradient(135deg, #4ade80, #34d399);
+  color: #000;
+}
+.btn-nav-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3); }
+.btn-nav-outline {
+  background: transparent;
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.btn-nav-outline:hover { background: rgba(74, 222, 128, 0.1); border-color: #4ade80; }
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px;
+}
+.menu-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+/* ===== HERO ===== */
+.hero {
+  min-height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 100px 24px 60px;
+  overflow: hidden;
+  background: #000;
+}
+
+/* ===== VIDEO SHOWCASE ===== */
+.video-showcase {
+  width: 100%;
+  background: #000;
+  padding: 0;
+}
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.video-wrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.video-controls {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+}
+.video-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+.video-btn:hover { background: rgba(74,222,128,0.3); border-color: #4ade80; }
+.hero-bg-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+.hero-content {
+  text-align: center;
+  max-width: 700px;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+}
+.hero-content img { margin: 0 auto; }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4ade80;
+  margin-bottom: 24px;
+  animation: fadeInDown 0.8s ease;
+}
+.hero h1 {
+  font-size: clamp(4rem, 8vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, #4ade80, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero h1 + .hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.75rem);
+  font-weight: 300;
+  color: #888;
+  margin-top: 4px;
+}
+.hero h1 .gradient {
+  background: linear-gradient(135deg, #4ade80, #34d399, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-subtitle {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  color: #888;
+  max-width: 640px;
+  margin: 0 auto 36px;
+  line-height: 1.7;
+  animation: fadeInUp 0.8s ease 0.2s both;
+}
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: fadeInUp 0.8s ease 0.3s both;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  font-family: inherit;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #4ade80, #34d399);
+  color: #000000;
+  box-shadow: 0 4px 24px rgba(74, 222, 128, 0.25);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(74, 222, 128, 0.35); }
+.btn-secondary {
+  background: rgba(255,255,255,0.05);
+  color: #e0e0e0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+.scroll-indicator {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #555;
+  font-size: 0.75rem;
+  animation: bounce 2s ease infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* ===== SECTIONS COMMON ===== */
+section { padding: 100px 24px; }
+.section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+.section-tag {
+  display: inline-block;
+  padding: 4px 14px;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.15);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4ade80;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  color: #fff;
+}
+.section-desc {
+  font-size: 1.125rem;
+  color: #888;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ===== FEATURES GRID ===== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.feature-card {
+  background: rgba(20,20,20,0.75);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 28px;
+  transition: all 0.4s;
+  backdrop-filter: blur(4px);
+}
+.feature-card:hover { border-color: rgba(74,222,128,0.15); background: rgba(30,30,30,0.8); }
+.feature-card h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.feature-card p { font-size: 0.875rem; color: #999; line-height: 1.7; }
+
+/* ===== TECH SPECS ===== */
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.spec-card {
+  background: rgba(20,20,20,0.75);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  transition: all 0.4s;
+  backdrop-filter: blur(4px);
+}
+.spec-card:hover { border-color: rgba(74,222,128,0.15); background: rgba(30,30,30,0.8); }
+.spec-card h3 { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.spec-desc { font-size: 0.875rem; color: #999; margin-bottom: 12px; }
+.spec-formats { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.spec-tag {
+  display: inline-block; padding: 5px 12px;
+  background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.12);
+  border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+  color: #4ade80; font-family: 'Courier New', monospace;
+}
+.spec-highlight { font-size: 1.15rem; font-weight: 700; color: #4ade80; margin-top: 6px; }
+.spec-sub { font-size: 0.8rem; color: #666; margin-top: 2px; }
+
+/* ===== PRICING ===== */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.pricing-card {
+  background: rgba(20,20,20,0.75);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  transition: all 0.4s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  backdrop-filter: blur(4px);
+}
+.pricing-card:hover { border-color: rgba(74,222,128,0.15); transform: translateY(-3px); background: rgba(30,30,30,0.85); }
+.pricing-card.featured { border-color: rgba(74,222,128,0.2); background: rgba(30,30,30,0.85); }
+.pricing-card.featured:hover { transform: translateY(-3px); }
+.pricing-badge {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #4ade80, #34d399);
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 16px;
+  border-radius: 0 0 8px 8px;
+  z-index: 2;
+}
+.pricing-tier { font-size: 0.7rem; font-weight: 600; color: #4ade80; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+.pricing-name { font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.pricing-price { font-size: 2.5rem; font-weight: 900; color: #fff; margin-bottom: 8px; }
+.pricing-currency { font-size: 1.25rem; vertical-align: super; color: #4ade80; }
+.pricing-desc { font-size: 0.8rem; color: #888; margin-bottom: 16px; line-height: 1.5; }
+.pricing-features-list { list-style: none; margin-bottom: 0; flex: 1; }
+.pricing-features-list li { padding: 5px 0; font-size: 0.82rem; color: #aaa; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.pricing-features-list li:last-child { border-bottom: none; }
+
+/* ===== FAQ ===== */
+#faq { background: #000; padding: 100px 0; }
+.faq-list { max-width: 720px; margin: 0 auto; }
+.faq-item {
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  background: rgba(20,20,20,0.6);
+  overflow: hidden;
+  transition: all 0.3s;
+  backdrop-filter: blur(4px);
+}
+.faq-item:hover { border-color: rgba(74,222,128,0.12); background: rgba(74,222,128,0.02); }
+.faq-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 18px 24px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  transition: color 0.3s;
+}
+.faq-question:hover { color: #4ade80; }
+.faq-question .faq-toggle {
+  font-size: 1.25rem;
+  transition: transform 0.3s;
+  color: #666;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+.faq-item.open .faq-question .faq-toggle { transform: rotate(45deg); color: #4ade80; }
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+  padding: 0 24px;
+}
+.faq-item.open .faq-answer {
+  max-height: 300px;
+  padding: 0 24px 20px;
+}
+.faq-answer p {
+  font-size: 0.9rem;
+  color: #999;
+  line-height: 1.7;
+}
+
+/* ===== PRE-REGISTER ===== */
+#pre-register { background: #000; padding: 100px 0; }
+.form-container {
+  max-width: 480px;
+  margin: 0 auto;
+  background: rgba(20,20,20,0.75);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 40px;
+  backdrop-filter: blur(4px);
+}
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #aaa;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+.form-input:focus { border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.03); box-shadow: 0 0 0 3px rgba(74,222,128,0.05); }
+.form-input::placeholder { color: #555; }
+.form-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 4px;
+  display: none;
+}
+.form-error.visible { display: block; }
+.btn-form {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #4ade80, #34d399);
+  color: #000;
+  border: none;
+  font-family: inherit;
+  transition: all 0.3s;
+}
+.btn-form:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(74,222,128,0.25); }
+.form-success {
+  display: none;
+  text-align: center;
+  padding: 20px;
+}
+.form-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(74,222,128,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 1.5rem;
+  color: #4ade80;
+}
+.form-success h3 { font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.form-success p { font-size: 0.9rem; color: #888; line-height: 1.6; }
+.form-disclaimer {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #555;
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+/* ===== THEME CAROUSEL ===== */
+.theme-carousel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.theme-carousel-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+.theme-viewport {
+  position: relative;
+  width: 460px;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #000;
+  flex-shrink: 0;
+}
+.theme-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+}
+.theme-slide.active {
+  opacity: 1;
+  position: relative;
+  transform: translateX(0);
+}
+.theme-slide.exit-left { transform: translateX(-100%); opacity: 0; }
+.theme-slide.exit-right { transform: translateX(100%); opacity: 0; }
+.theme-slide.enter-left { transform: translateX(100%); opacity: 0; }
+.theme-slide.enter-right { transform: translateX(-100%); opacity: 0; }
+.theme-arrow {
+  background: none;
+  border: none;
+  color: #fff;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.theme-arrow:hover { opacity: 1; transform: scale(1.2); }
+.theme-name {
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+.contact-grid {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 28px;
+  background: rgba(20,20,20,0.75);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  transition: all 0.3s;
+  min-width: 200px;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.contact-card:hover { border-color: rgba(74, 222, 128, 0.2); transform: translateY(-2px); background: rgba(74, 222, 128, 0.03); }
+.contact-icon { font-size: 1.5rem; }
+.contact-card span { font-size: 0.9375rem; font-weight: 500; color: #ccc; }
+
+/* ===== FOOTER ===== */
+footer {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 40px 24px 60px;
+  text-align: center;
+}
+.footer-dev { margin-bottom: 40px; }
+.dev-text {
+  font-size: 0.75rem;
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 8px;
+}
+.dev-logo { height: auto; display: block; margin: 0 auto; max-width: 200px; opacity: 0.5; }
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 0.8125rem; color: #666; }
+.footer-links a:hover { color: #4ade80; }
+.footer-copy { font-size: 0.8125rem; color: #555; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: all 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-card.featured { transform: none; }
+  .pricing-card.featured:hover { transform: translateY(-4px); }
+  .specs-grid { grid-template-columns: 1fr; }
+  .form-container { padding: 24px; }
+  .mockup-content { flex-direction: column; text-align: center; padding: 20px; }
+  .mockup-text { text-align: center; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  .contact-grid { flex-direction: column; align-items: center; }
+}
+@media (max-width: 480px) {
+  .themes-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero h1 { font-size: 2rem; }
+  .hero-actions { flex-direction: column; }
+  .btn { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#hero" class="nav-logo"><img src="ECCOlogo.png" alt="ECCO" style="height:36px;width:auto;display:block"></a>
+    <div class="nav-links" id="navLinks">
+      <a href="#features">Features</a>
+      <a href="#themes">Themes</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#pre-register">Pre‑register</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-nav btn-nav-outline" style="min-width:40px;font-size:0.75rem" onclick="toggleLang()">ES</button>
+      <a href="https://www.kickstarter.com/profile/ecco-samplemanager" target="_blank" rel="noopener" class="btn-nav btn-nav-outline" data-lang="en">Kickstarter</a><a href="https://www.kickstarter.com/profile/ecco-samplemanager" target="_blank" rel="noopener" class="btn-nav btn-nav-outline" data-lang="es" style="display:none">Kickstarter</a>
+      <a href="#pre-register" class="btn-nav btn-nav-primary" data-lang="en">Pre‑register</a><a href="#pre-register" class="btn-nav btn-nav-primary" data-lang="es" style="display:none">Pre‑registro</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section id="hero" class="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span style="color:#4ade80">✦</span>
+      <span>Now on Kickstarter</span>
+    </div>
+    <img src="ECCOlogo.png" alt="ECCO" style="height:140px;width:auto;display:block;margin:0 auto 4px">
+    <p class="hero-subtitle">AI Sample Library Manager</p>
+    <p class="hero-subtitle" style="font-size:1.1rem;color:#888;margin-top:8px"><span data-lang="en">AI-powered search, smart organization, and a tiny studio buddy — all fully offline.</span><span data-lang="es" style="display:none">Búsqueda por IA, organización inteligente y un pequeño compañero — todo completamente offline.</span></p>
+    <div class="hero-actions">
+      <a href="#pre-register" class="btn btn-primary" data-lang="en">Pre‑register Now</a><a href="#pre-register" class="btn btn-primary" data-lang="es" style="display:none">Pre‑registro</a>
+      <a href="https://www.kickstarter.com/profile/ecco-samplemanager" target="_blank" rel="noopener" class="btn btn-secondary" data-lang="en">Kickstarter</a><a href="https://www.kickstarter.com/profile/ecco-samplemanager" target="_blank" rel="noopener" class="btn btn-secondary" data-lang="es" style="display:none">Kickstarter</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== VIDEO SHOWCASE ===== -->
+<section class="video-showcase">
+  <div class="video-wrapper">
+    <iframe id="vimeoPlayer" src="https://player.vimeo.com/video/1190052547?autoplay=1&loop=1&muted=1&playsinline=1&dnt=1" allow="autoplay; fullscreen" loading="lazy"></iframe>
+    <div class="video-controls">
+      <button class="video-btn" id="muteBtn" onclick="toggleMute()" title="Toggle audio">🔇</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section id="features">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Features</div>
+      <h2 class="section-title">Everything your samples need</h2>
+      <p class="section-desc">ECCO brings order to your sample library with AI that works entirely on your machine.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <h3>AI Search</h3>
+        <p>Search by text description, BPM, key, or category. Type "dark ambient pad 90bpm" and ECCO finds it instantly.</p>
+      </div>
+      <div class="feature-card reveal">
+        <h3>Similarity Drop Zone</h3>
+        <p>Drop any sample onto ECCO and it will find every sonically similar file in your library. Perfect for building cohesive kits.</p>
+      </div>
+      <div class="feature-card reveal">
+        <h3>Workflow Cockatoo</h3>
+        <p>Press a hotkey and ECCO transforms into a tiny, always-on-top overlay. Browse and drag samples without leaving your DAW.</p>
+      </div>
+      <div class="feature-card reveal">
+        <h3>Smart Collections</h3>
+        <p>Nested folders, auto-tagging, drag-and-drop organization. Create smart collections that update as you add new samples.</p>
+      </div>
+      <div class="feature-card reveal">
+        <h3>Social Chat</h3>
+        <p>Share samples and collections with other producers directly through ECCO. Built-in chat for the producer community.</p>
+      </div>
+      <div class="feature-card reveal">
+        <h3>100% Offline</h3>
+        <p>All AI processing runs locally on your machine. No cloud, no internet required, no samples ever leave your computer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THEMES ===== -->
+<section id="themes">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Customization</div>
+      <h2 class="section-title">Choose your vibe</h2>
+      <p class="section-desc">ECCO ships with five hand-crafted themes. Match your studio aesthetic.</p>
+    </div>
+    <div class="theme-carousel reveal">
+      <div class="theme-carousel-row">
+        <button class="theme-arrow theme-arrow-left" onclick="prevTheme()">◀</button>
+        <div class="theme-viewport">
+          <img src="matrix.png" alt="Green Matrix" class="theme-slide active" data-theme="Green Matrix">
+          <img src="blue.png" alt="Neon Blue" class="theme-slide" data-theme="Neon Blue">
+          <img src="deep.png" alt="Deep Blue" class="theme-slide" data-theme="Deep Blue">
+          <img src="yellow.png" alt="Neon Yellow" class="theme-slide" data-theme="Neon Yellow">
+          <img src="gris.png" alt="Monochrome" class="theme-slide" data-theme="Monochrome">
+          <img src="pink.png" alt="Neon Pink" class="theme-slide" data-theme="Neon Pink">
+        </div>
+        <button class="theme-arrow theme-arrow-right" onclick="nextTheme()">▶</button>
+      </div>
+      <div class="theme-name" id="themeName">Green Matrix</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TECH SPECS ===== -->
+<section id="tech-specs">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Tech Specs</div>
+      <h2 class="section-title">Built for producers</h2>
+      <p class="section-desc">Handles massive libraries without breaking a sweat.</p>
+    </div>
+    <div class="specs-grid">
+      <div class="spec-card reveal">
+        <h3>Supported Formats</h3>
+        <p class="spec-desc">All major audio formats supported out of the box.</p>
+        <div class="spec-formats">
+          <span class="spec-tag">WAV</span>
+          <span class="spec-tag">MP3</span>
+          <span class="spec-tag">FLAC</span>
+          <span class="spec-tag">OGG</span>
+          <span class="spec-tag">AIFF</span>
+          <span class="spec-tag">M4A</span>
+        </div>
+      </div>
+      <div class="spec-card reveal">
+        <h3>Massive Capacity</h3>
+        <p class="spec-desc">Designed for professional libraries of any size.</p>
+        <p class="spec-highlight">50,000+ samples</p>
+        <p class="spec-sub">Instant search, zero lag. Your entire collection, fully indexed.</p>
+      </div>
+      <div class="spec-card reveal">
+        <h3>Cross‑Platform</h3>
+        <p class="spec-desc">Native apps for your operating system of choice.</p>
+        <p class="spec-highlight">Windows 10/11</p>
+        <p class="spec-highlight">macOS 12+</p>
+        <p class="spec-sub">Intel & Apple Silicon supported.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Kickstarter Rewards</div>
+      <h2 class="section-title">Choose your tier</h2>
+      <p class="section-desc">Back the campaign and lock in early-bird pricing.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card reveal">
+        <div class="pricing-tier">Early Bird</div>
+        <div class="pricing-name">Starter</div>
+        <div class="pricing-price"><span class="pricing-currency">$</span>19</div>
+        <ul class="pricing-features-list">
+          <li>1 × ECCO License</li>
+          <li>Closed beta access</li>
+        </ul>
+      </div>
+      <div class="pricing-card featured reveal">
+        <div class="pricing-badge">Popular</div>
+        <div class="pricing-tier">Backer</div>
+        <div class="pricing-name">Standard</div>
+        <div class="pricing-price"><span class="pricing-currency">$</span>29</div>
+        <ul class="pricing-features-list">
+          <li>Everything in Starter</li>
+          <li>Founder role on Discord</li>
+        </ul>
+      </div>
+      <div class="pricing-card reveal">
+        <div class="pricing-tier">Complete</div>
+        <div class="pricing-name">Producer</div>
+        <div class="pricing-price"><span class="pricing-currency">$</span>49</div>
+        <ul class="pricing-features-list">
+          <li>Everything in Backer</li>
+          <li>Exclusive suggestion channel</li>
+          <li>Early Access to upcoming features</li>
+        </ul>
+      </div>
+      <div class="pricing-card reveal">
+        <div class="pricing-tier">Studio Pack</div>
+        <div class="pricing-name">Studio</div>
+        <div class="pricing-price"><span class="pricing-currency">$</span>99</div>
+        <ul class="pricing-features-list">
+          <li>Everything in Complete</li>
+          <li>Up to 3 × ECCO License</li>
+          <li>Up to 3 × Closed beta access</li>
+          <li>Discount on future versions/upgrades</li>
+          <li>Priority feature voting</li>
+        </ul>
+      </div>
+      <div class="pricing-card reveal">
+        <div class="pricing-tier">Producer Pro</div>
+        <div class="pricing-name">Pro</div>
+        <div class="pricing-price"><span class="pricing-currency">$</span>199</div>
+        <ul class="pricing-features-list">
+          <li>Everything in Studio</li>
+          <li>Up to 5 × ECCO License</li>
+          <li>Up to 5 × Closed beta access</li>
+          <li>Featured name in credits</li>
+          <li>Direct dev feedback</li>
+        </ul>
+      </div>
+      <div class="pricing-card reveal">
+        <div class="pricing-tier">Studio Legend</div>
+        <div class="pricing-name">Legend</div>
+        <div class="pricing-price"><span class="pricing-currency">$</span>499</div>
+        <ul class="pricing-features-list">
+          <li>Everything in Pro</li>
+          <li>Up to 10 × ECCO License</li>
+          <li>Up to 10 × Closed beta access</li>
+          <li>2 × Lifetime ECCO license</li>
+          <li>Roadmap collaboration</li>
+          <li>Custom UI theme / skin</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">FAQ</div>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-desc">Everything you need to know about ECCO.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          Does ECCO really work fully offline?
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer"><p>Yes. All AI processing — sample analysis, search, similarity matching — runs locally on your machine. No data is ever sent to the cloud. ECCO works with zero internet connectivity.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          What audio formats are supported?
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer"><p>ECCO supports WAV, MP3, FLAC, OGG, AIFF, and M4A files. If your samples are in any of these formats, ECCO can index, analyze, and search them.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          Which DAWs is ECCO compatible with?
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer"><p>ECCO works with any DAW that supports drag-and-drop audio import — that includes Ableton Live, FL Studio, Logic Pro, Cubase, Studio One, Pro Tools, Reaper, Bitwig, and more.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          Will ECCO work with my existing sample library?
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer"><p>Absolutely. ECCO doesn't move or modify your files. It indexes them in place and analyzes their audio characteristics. Point it at your folders and go.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          How does AI search work?
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer"><p>ECCO uses a local neural network to analyze each sample's sonic profile — frequency spectrum, transients, tonal content, and more. It then generates descriptive tags and enables natural language search so you can find samples by describing what you hear.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          What is Workflow Mode exactly?
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer"><p>Workflow Mode collapses ECCO into a compact, always-on-top overlay. You can search, browse, preview, and drag samples directly into your DAW without leaving your project. When idle, clicks pass through to the window beneath.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          When will ECCO be released?
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer"><p>We're targeting Q3 2026 for the public release. Kickstarter backers will receive early access builds during development. Pre-register to get notified of all updates.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRE-REGISTER ===== -->
+<section id="pre-register">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Stay Updated</div>
+      <h2 class="section-title">Pre‑register for ECCO</h2>
+      <p class="section-desc">Be the first to know when ECCO launches. No spam, just launch news.</p>
+    </div>
+    <div class="form-container reveal">
+      <form id="registerForm" novalidate>
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" class="form-input" placeholder="Your name" required autocomplete="name">
+          <div class="form-error" id="nameError">Please enter your name.</div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+          <div class="form-error" id="emailError">Please enter a valid email address.</div>
+        </div>
+        <button type="submit" class="btn-form">Pre‑register Now</button>
+      </form>
+      <div class="form-success" id="formSuccess">
+        <div class="form-success-icon">✓</div>
+        <h3>You're on the list!</h3>
+        <p>We'll notify you when ECCO launches. Welcome aboard.</p>
+      </div>
+      <p class="form-note">Be the first to hear about launch dates, early access, and exclusive backer rewards.</p>
+      <p class="form-privacy">Your data stays with us. We never share or sell your information. One email at launch, nothing more.</p>
+      <!-- Form posts to placeholder URL. Connect to your backend endpoint. -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section id="contact">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Connect</div>
+      <h2 class="section-title">Get in touch</h2>
+      <p class="section-desc">Follow the campaign, join the community, or reach out directly.</p>
+    </div>
+    <div class="contact-grid reveal">
+      <a href="https://www.kickstarter.com/profile/ecco-samplemanager" target="_blank" rel="noopener" class="contact-card">
+        <span class="contact-icon">▸</span>
+        <span>Kickstarter Campaign</span>
+      </a>
+      <a href="https://discord.com" target="_blank" rel="noopener" class="contact-card">
+        <span class="contact-icon">◆</span>
+        <span>Join our Discord</span>
+      </a>
+      <a href="mailto:omnesia.jaca@gmail.com" class="contact-card">
+        <span class="contact-icon">✉</span>
+        <span>omnesia.jaca@gmail.com</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-dev">
+    <p class="dev-text">Developed by</p>
+    <img src="blanco.png" alt="Omnesia" class="dev-logo">
+  </div>
+  <div class="footer-inner">
+    <div class="footer-copy">&copy; 2026 Omnesia. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#hero">Home</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#pre-register">Pre‑register</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Mobile menu toggle
+const menuToggle = document.getElementById('menuToggle');
+const navLinks = document.getElementById('navLinks');
+menuToggle.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+});
+
+// Close nav on link click (mobile)
+navLinks.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+  });
+});
+
+// Nav background on scroll
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Scroll reveal
+const revealElements = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+revealElements.forEach(el => revealObserver.observe(el));
+
+// FAQ accordion
+document.querySelectorAll('.faq-question').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(open => open.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+
+// Form validation
+const form = document.getElementById('registerForm');
+const nameInput = document.getElementById('name');
+const emailInput = document.getElementById('email');
+const nameError = document.getElementById('nameError');
+const emailError = document.getElementById('emailError');
+const formSuccess = document.getElementById('formSuccess');
+
+function showError(input, errorEl) {
+  input.classList.add('error');
+  errorEl.style.display = 'block';
+}
+function clearError(input, errorEl) {
+  input.classList.remove('error');
+  errorEl.style.display = 'none';
+}
+
+nameInput.addEventListener('input', () => clearError(nameInput, nameError));
+emailInput.addEventListener('input', () => clearError(emailInput, emailError));
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  let valid = true;
+
+  if (!nameInput.value.trim()) {
+    showError(nameInput, nameError);
+    valid = false;
+  } else {
+    clearError(nameInput, nameError);
+  }
+
+  if (!emailInput.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+    showError(emailInput, emailError);
+    valid = false;
+  } else {
+    clearError(emailInput, emailError);
+  }
+
+  if (valid) {
+    // POST to placeholder URL — replace with your actual endpoint
+    const payload = { name: nameInput.value.trim(), email: emailInput.value.trim() };
+    fetch('https://api.ecco-samplemanager.com/pre-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+    form.style.display = 'none';
+    formSuccess.style.display = 'block';
+  }
+});
+
+// Video mute toggle
+function toggleMute() {
+  const iframe = document.getElementById('vimeoPlayer');
+  const isMuted = iframe.src.includes('muted=1');
+  iframe.src = iframe.src.replace(isMuted ? 'muted=1' : 'muted=0', isMuted ? 'muted=0' : 'muted=1');
+  document.getElementById('muteBtn').textContent = isMuted ? '🔊' : '🔇';
+}
+let currentLang = 'en';
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'es' : 'en';
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    el.style.display = el.getAttribute('data-lang') === currentLang ? '' : 'none';
+  });
+  document.querySelectorAll('[data-lang-all]').forEach(el => {
+    el.textContent = el.getAttribute('data-' + currentLang);
+  });
+  const btn = document.querySelector('.nav-actions .btn-nav-outline:first-child');
+  if (btn) btn.textContent = currentLang === 'en' ? 'ES' : 'EN';
+}
+
+// Theme carousel
+let currentTheme = 0;
+const slides = document.querySelectorAll('.theme-slide');
+const themeName = document.getElementById('themeName');
+function showTheme(idx, direction) {
+  direction = direction || 'left';
+  const old = slides[currentTheme];
+  slides.forEach(s => { s.classList.remove('exit-left','exit-right','enter-left','enter-right'); });
+  currentTheme = (idx + slides.length) % slides.length;
+  const next = slides[currentTheme];
+  if (old !== next) {
+    old.classList.remove('active');
+    old.classList.add(direction === 'left' ? 'exit-left' : 'exit-right');
+    next.classList.add(direction === 'left' ? 'enter-right' : 'enter-left');
+    requestAnimationFrame(() => {
+      next.classList.remove('enter-left','enter-right');
+      next.classList.add('active');
+    });
+  } else {
+    next.classList.add('active');
+  }
+  if (themeName) themeName.textContent = next.getAttribute('alt');
+}
+function nextTheme() { showTheme(currentTheme + 1, 'left'); }
+function prevTheme() { showTheme(currentTheme - 1, 'right'); }
+showTheme(0);
+toggleLang();
+</script>
+
+</body>
+</html>
