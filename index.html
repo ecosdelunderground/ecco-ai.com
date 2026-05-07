@@ -83,7 +83,14 @@ nav.scrolled {
 }
 .nav-links a:hover { color: #fff; }
 .nav-links a:hover::after { width: 100%; }
-.nav-actions { display: flex; align-items: center; gap: 16px; }
+.nav-actions { display: flex; align-items: center; gap: 12px; }
+.btn-nav-discord {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.3s; cursor: pointer;
+}
+.btn-nav-discord:hover { background: rgba(114,137,218,0.2); border-color: rgba(114,137,218,0.3); }
 .btn-nav {
   padding: 8px 20px;
   border-radius: 8px;
@@ -744,6 +751,9 @@ footer {
     <div class="nav-actions">
       <button class="btn-nav btn-nav-outline" style="min-width:40px;font-size:0.75rem" onclick="toggleLang()">ES</button>
       <a href="https://www.kickstarter.com/profile/ecco-samplemanager" target="_blank" rel="noopener" class="btn-nav btn-nav-outline" data-lang="en">Kickstarter</a><a href="https://www.kickstarter.com/profile/ecco-samplemanager" target="_blank" rel="noopener" class="btn-nav btn-nav-outline" data-lang="es" style="display:none">Kickstarter</a>
+      <a href="https://discord.gg/PdXANufdWR" target="_blank" rel="noopener" class="btn-nav btn-nav-discord" title="Join our Discord">
+        <img src="discord.png" alt="Discord" style="height:20px;width:auto;display:block">
+      </a>
       <a href="#pre-register" class="btn-nav btn-nav-primary" data-lang="en">Pre‑register</a><a href="#pre-register" class="btn-nav btn-nav-primary" data-lang="es" style="display:none">Pre‑registro</a>
       <button class="menu-toggle" id="menuToggle" aria-label="Menu">
         <span></span><span></span><span></span>
