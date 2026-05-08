@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ecco.omnesia.es/sitemap.xml
